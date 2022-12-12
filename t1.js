@@ -1,6 +1,7 @@
 var gl;
 var LeVarying = vec3(1.0, 0.0, 0.0);
 var orientVal = 0.5;
+var noiseVal = 25;
 
 window.onload = function init()
 {
@@ -18,8 +19,12 @@ window.onload = function init()
         LeVarying = vec3(color.rgba[0]/255, color.rgba[1]/255, color.rgba[2]/255);
     };
 
-    document.getElementById("orient-slider").onchange = function() {
+    document.getElementById("orient-slider").oninput = function() {
         orientVal = event.srcElement.value;
+    };
+
+    document.getElementById("noise-slider").oninput = function() {
+        noiseVal = event.srcElement.value;
     };
 
 
@@ -39,6 +44,8 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.uniform3fv(gl.getUniformLocation(gl.program, "Le"), flatten(LeVarying));
+    gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), noiseVal);
+
     for(let i=0; i<gl.pointsArray.length; i+=3)
         gl.drawArrays(gl.TRIANGLES, i, 3);
 

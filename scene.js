@@ -4,9 +4,9 @@ const LeVal = vec3(LeRadiance, 0.0, 0.0);
 const kaVal = 0.1;
 const kdVal = 0.8;
 const ksVal = 0.3;
-const sVal = 100;
+const sVal = 50;
 
-const alpha = 45.0;
+const alpha = 90.0;
 const n = 1.0;
 const f = 100.0;
 
@@ -43,11 +43,13 @@ function view(gl, canvas) {
     let projectionTransform = perspective(alpha, A, n, f);
     gl.uniformMatrix4fv(gl.getUniformLocation(gl.program, "P"), false, flatten(projectionTransform));
 
-    eye = vec3(0.0, 0.0, 5.0);
+    eye = vec3(0.0, 0.0, 2.0);
     up = vec3(0.0, 1.0, 0.0);
     at = vec3(0.0, 0.0, 0.0);
+
     let viewMat = lookAt(eye, at, up);
     gl.uniformMatrix4fv(gl.getUniformLocation(gl.program, "V"), false, flatten(viewMat));
+
     let N = normalMatrix(viewMat, true);
     gl.uniformMatrix3fv(gl.getUniformLocation(gl.program, "N"), false, flatten(N));
 }
