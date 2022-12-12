@@ -9,6 +9,7 @@ window.onload = function init()
     let canvas = document.getElementById("canvas");
     gl = setup(canvas)
 
+    decideScene(gl);
     initBackground(gl);
     initSphere(gl, numTimesToSubdivide);
     light(gl);
@@ -29,7 +30,6 @@ window.onload = function init()
         noiseVal = event.srcElement.value;
     };
 
-
     render();
 }
 
@@ -39,19 +39,27 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.uniform3fv(gl.getUniformLocation(gl.program, "Le"), flatten(LeVarying));
-    gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), noiseVal);
 
+    gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), gl.bgScale);
     gl.uniform1i(gl.getUniformLocation(gl.program, "background"), true);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
     gl.uniform1i(gl.getUniformLocation(gl.program, "background"), false);
-    let M = getModel(orientVal, 1.0, 0.0, 0.0);
-    let N = normalMatrix(mult(gl.viewMat, M), true);
-    gl.uniformMatrix4fv(gl.getUniformLocation(gl.program, "M"), false, flatten(M));
-    gl.uniformMatrix3fv(gl.getUniformLocation(gl.program, "N"), false, flatten(N));
-    for(let i=4; i<gl.pointsArray.length; i+=3)
-        gl.drawArrays(gl.TRIANGLES, i, 3);
+    gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), noiseVal);
 
+    for (let i=0; i<gl.balls; i+=1) {
+        let M = getModel(orientVal, gl.ballScales[i], gl.ballX[i], gl.ballY[i])
+        let N = normalMatrix(mult(gl.viewMat, M), true);
+        gl.uniformMatrix4fv(gl.getUniformLocation(gl.program, "M"), false, flatten(M));
+        gl.uniformMatrix3fv(gl.getUniformLocation(gl.program, "N"), false, flatten(N));
+
+        gl.uniform1f(gl.getUniformLocation(gl.program, "kd"), gl.ballKd[i]);
+        gl.uniform1f(gl.getUniformLocation(gl.program, "ks"), gl.ballKs[i]);
+        gl.uniform1f(gl.getUniformLocation(gl.program, "s"), gl.ballS[i]);
+
+        for(let j=4; j<gl.pointsArray.length; j+=3)
+            gl.drawArrays(gl.TRIANGLES, j, 3);
+    }
 
     requestAnimationFrame(render)
 }

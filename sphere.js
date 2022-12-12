@@ -40,10 +40,6 @@ function tetrahedron(a, b, c, d, n, gl)
 }
 
 function initSphere(gl, numSubdivs) {
-
-    gl.pointsArray = [];
-    gl.normalsArray = [];
-
     tetrahedron(va, vb, vc, vd, numSubdivs, gl);
 
     gl.deleteBuffer(gl.nBuffer);
@@ -65,3 +61,12 @@ function initSphere(gl, numSubdivs) {
     gl.enableVertexAttribArray( vPosition );
 }
 
+function getModel(orient, scale, posx, posy) {
+    let sx = orient * 2.0;
+    let sy = (1 - orient) * 2.0;
+    let norm = 2 ** 0.5 / (sx**2 + sy**2)**0.5;
+    let orientTransform = scalem(sx*norm, sy*norm, 1.0);
+    let scaleTransform = scalem(scale, scale, scale);
+    let transTransform = translate(posx, posy, 0.0);
+    return mult(transTransform, mult(scaleTransform, orientTransform));
+}

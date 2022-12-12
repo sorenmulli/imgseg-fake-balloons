@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Task 1</title>
+    <title>Task 2</title>
     <!-- WebGL helpers -->
     <script type="text/javascript" src="webgl-utils.js"></script>
     <script type="text/javascript" src="initShaders.js"></script>
@@ -10,6 +10,7 @@
     <!-- Exercise solution -->
     <script type="text/javascript" src="scene.js"></script>
     <script type="text/javascript" src="sphere.js"></script>
+    <script type="text/javascript" src="randomness.js"></script>
     <script src="https://unpkg.com/vanilla-picker@2"></script>
 
     <script id="vertex-shader" type="x-shader/x-vertex">
@@ -88,7 +89,7 @@
 
         void main() {
             if (background) {
-                vec3 p = vec3(10.0 * n.x, 10.0 * n.y, 0);
+                vec3 p = vec3(noiseScale * n.x, noiseScale * n.y, 0);
                 float noiseIntensity = 0.5 * pnoise(p) + 0.5;
                 gl_FragColor = vec4(noiseIntensity, noiseIntensity, noiseIntensity, 1.0);
             } else {
@@ -108,7 +109,7 @@
     </script>
     </script>
 
-    <script type="text/javascript" src="t1.js"></script>
+    <script type="text/javascript" src="t2.js"></script>
     <style>
         html, body {
             width: 75%;
