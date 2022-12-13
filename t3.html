@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Task 2</title>
+    <title>Task 3</title>
     <!-- WebGL helpers -->
     <script type="text/javascript" src="webgl-utils.js"></script>
     <script type="text/javascript" src="initShaders.js"></script>
@@ -109,7 +109,7 @@
     </script>
     </script>
 
-    <script type="text/javascript" src="t2.js"></script>
+    <script type="text/javascript" src="t3.js"></script>
     <style>
         html, body {
             width: 75%;
@@ -129,23 +129,14 @@
             <canvas id="canvas" width="512" height="512">Please use a browser supporting WebGL</canvas>
         </div>
         <div class="column">
-            <p>Change characteristics of all spheres</p> 
+            <p>Control class influence</p> 
             </br>
             <button id="recomputeButton">New scene</button> <a id="imgLink"></a>
-            <h2> Color </h2>
-            <div id="color-parent"><u>PRESS ME</u></div>
-            <h2> Shape </h2>
-            <p>
-            0
-            <input type="range" min="0.05" max="0.95" value="0.4" step="0.05" class="slider" id="orient-slider">
-            1
-            </p>
-            <h2> Noise scale </h2>
-            <p>
-            1
-            <input type="range" min="1" max="51" value="25" step="5" class="slider" id="noise-slider">
-            50
-            </p>
+            (lighting and position fixed for visibility)
+            </br>
+            <button id="randomButton">New random class characteristics</button>
+            </br>
+            <button id="avgButton">Show class prior average</button>
         </div>
     </div> 
 </body>

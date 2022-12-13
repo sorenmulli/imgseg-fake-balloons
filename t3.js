@@ -1,8 +1,5 @@
 var gl;
 
-var LeVarying = vec3(1.0, 0.0, 0.0);
-var orientVal = 0.5;
-var noiseVal = 25;
 
 window.onload = function init()
 {
@@ -15,27 +12,37 @@ window.onload = function init()
     view(gl, canvas);
 
     decideScene(gl);
-
-    let parent = document.querySelector('#color-parent');
-    let picker = new Picker({parent: parent, color: 'red', alpha: false, editor: false});
-    picker.onChange = function(color) {
-        parent.style.background = color.rgbaString;
-        LeVarying = vec3(color.rgba[0]/255, color.rgba[1]/255, color.rgba[2]/255);
-    };
+    exampleScene(gl)
+    decideBallAttributes(gl);
 
     document.getElementById("recomputeButton").onclick = function(){
         decideScene(gl);
+        exampleScene(gl)
     };
 
-    document.getElementById("orient-slider").oninput = function() {
-        orientVal = event.srcElement.value;
+    document.getElementById("randomButton").onclick = function(){
+        decideBallAttributes(gl);
     };
 
-    document.getElementById("noise-slider").oninput = function() {
-        noiseVal = event.srcElement.value;
+    document.getElementById("avgButton").onclick = function(){
+        decideBallAttributes(gl, true);
     };
 
     render();
+}
+
+function exampleScene(gl) {
+    // Hardcode to show example
+    gl.balls = 3;
+
+    gl.ballScales = [0.5, 0.5, 0.5];
+    gl.ballX = [-1.2, 0, 1.2];
+    gl.ballY = [0, 0, 0];
+
+    gl.ballClass = [0, 1, 2];
+    gl.ballKd = [0.5, 0.5, 0.5];
+    gl.ballKs = [0.25, 0.25, 0.25];
+    gl.ballS = [50, 50, 50];
 }
 
 
@@ -43,19 +50,21 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.uniform3fv(gl.getUniformLocation(gl.program, "Le"), flatten(LeVarying));
 
     gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), gl.bgScale);
     gl.uniform1i(gl.getUniformLocation(gl.program, "background"), true);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
     gl.uniform1i(gl.getUniformLocation(gl.program, "background"), false);
-    gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), noiseVal);
 
     for (let i=0; i<gl.balls; i+=1) {
-        let M = getModel(orientVal, gl.ballScales[i], gl.ballX[i], gl.ballY[i])
+        let M = getModel(gl.ballOrient[i], gl.ballScales[i], gl.ballX[i], gl.ballY[i])
         let N = normalMatrix(mult(gl.viewMat, M), true);
+
+        gl.uniform1f(gl.getUniformLocation(gl.program, "noiseScale"), gl.ballNoiseScale[i]);
+        gl.uniform3fv(gl.getUniformLocation(gl.program, "Le"), flatten(gl.ballColor[i]));
         gl.uniformMatrix4fv(gl.getUniformLocation(gl.program, "M"), false, flatten(M));
+
         gl.uniformMatrix3fv(gl.getUniformLocation(gl.program, "N"), false, flatten(N));
 
         gl.uniform1f(gl.getUniformLocation(gl.program, "kd"), gl.ballKd[i]);

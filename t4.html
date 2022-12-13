@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Task 2</title>
+    <title>Task 4</title>
     <!-- WebGL helpers -->
     <script type="text/javascript" src="webgl-utils.js"></script>
     <script type="text/javascript" src="initShaders.js"></script>
@@ -46,6 +46,7 @@
         uniform float ka, kd, ks, s;
 
         uniform bool background;
+        uniform bool labelmap;
 
         varying vec3  w_i, w_o, n;
         uniform float noiseScale;
@@ -91,7 +92,11 @@
             if (background) {
                 vec3 p = vec3(noiseScale * n.x, noiseScale * n.y, 0);
                 float noiseIntensity = 0.5 * pnoise(p) + 0.5;
-                gl_FragColor = vec4(noiseIntensity, noiseIntensity, noiseIntensity, 1.0);
+                if (labelmap) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                } else {
+                    gl_FragColor = vec4(noiseIntensity, noiseIntensity, noiseIntensity, 1.0);
+                }
             } else {
                 float d = max(dot(normalize(n), normalize(w_i)), 0.0);
                 vec3 w_h = normalize(w_i + w_o);
@@ -103,13 +108,17 @@
                 vec3 lightDiffuse = d * kd * Le * noiseIntensity;
                 vec3 lightAmbient = ka * Le;
 
-                gl_FragColor = vec4(lightDiffuse + lightAmbient + lightSpecular, 1.0);
+                if (labelmap) {
+                    gl_FragColor = vec4(Le, 1.0);
+                } else {
+                    gl_FragColor = vec4(lightDiffuse + lightAmbient + lightSpecular, 1.0);
+                }
             }
         }
     </script>
     </script>
 
-    <script type="text/javascript" src="t2.js"></script>
+    <script type="text/javascript" src="t4.js"></script>
     <style>
         html, body {
             width: 75%;
@@ -129,23 +138,13 @@
             <canvas id="canvas" width="512" height="512">Please use a browser supporting WebGL</canvas>
         </div>
         <div class="column">
-            <p>Change characteristics of all spheres</p> 
+            <p> Control example generation </p> 
             </br>
-            <button id="recomputeButton">New scene</button> <a id="imgLink"></a>
-            <h2> Color </h2>
-            <div id="color-parent"><u>PRESS ME</u></div>
-            <h2> Shape </h2>
-            <p>
-            0
-            <input type="range" min="0.05" max="0.95" value="0.4" step="0.05" class="slider" id="orient-slider">
-            1
-            </p>
-            <h2> Noise scale </h2>
-            <p>
-            1
-            <input type="range" min="1" max="51" value="25" step="5" class="slider" id="noise-slider">
-            50
-            </p>
+            <p><button id="recomputeButton">New scene</button> <a id="imgLink"></a></p>
+            </br>
+            <p><button id="labelMapButton">Toggle label map</button></p>
+            </br>
+            <p><button id="saveButton">Save image</button> <a id="imgLink"></a></p>
         </div>
     </div> 
 </body>
