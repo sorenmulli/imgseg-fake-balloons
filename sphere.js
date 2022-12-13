@@ -70,3 +70,7 @@ function getModel(orient, scale, posx, posy) {
     let transTransform = translate(posx, posy, 0.0);
     return mult(transTransform, mult(scaleTransform, orientTransform));
 }
+
+function drawSphere(gl) {
+    gl.drawArrays(gl.TRIANGLES, 4, gl.pointsArray.length-4);
+}

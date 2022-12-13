@@ -1,3 +1,22 @@
+const n_classes = 3
+
+const classAvgHue = [100, 200, 300];
+const stdHue = 50;
+
+const classAvgOrients = [0.65, 0.35, 0.5];
+const stdOrient = 0.1;
+
+const classAvgNoiseScales = [5, 17.5, 30];
+const stdNoiseScale = 5;
+
+// https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion/64090995#64090995
+// input: h as an angle in [0,360] and s,l in [0,1] - output: r,g,b in [0,1]
+function hsl2rgb(h,s,l)
+{
+   let a=s*Math.min(l,1-l);
+   let f= (n,k=(n+h/30)%12) => l - a*Math.max(Math.min(k-3,9-k,1),-1);
+   return [f(0),f(8),f(4)];
+}
 
 function randomRange(min, max) { 
     return Math.random() * (max - min) + min;
@@ -25,4 +44,17 @@ function decideScene(gl) {
 
     gl.bgScale = randomRange(1, 20);
 
+}
+
+function decideBallAttributes(gl) {
+    gl.ballClass = [];
+    gl.ballColor = [];
+    gl.ballOrient = [];
+    gl.ballNoiseScale = [];
+    for (let i=0; i<gl.balls; i+=1) {
+        gl.ballClass.push();
+        gl.ballOrient.push();
+        gl.ballNoiseScale.push();
+        gl.ballColor.push();
+    }
 }

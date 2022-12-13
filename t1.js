@@ -29,7 +29,6 @@ window.onload = function init()
         noiseVal = event.srcElement.value;
     };
 
-
     render();
 }
 
@@ -49,9 +48,8 @@ function render()
     let N = normalMatrix(mult(gl.viewMat, M), true);
     gl.uniformMatrix4fv(gl.getUniformLocation(gl.program, "M"), false, flatten(M));
     gl.uniformMatrix3fv(gl.getUniformLocation(gl.program, "N"), false, flatten(N));
-    for(let i=4; i<gl.pointsArray.length; i+=3)
-        gl.drawArrays(gl.TRIANGLES, i, 3);
 
+    drawSphere(gl);
 
     requestAnimationFrame(render)
 }

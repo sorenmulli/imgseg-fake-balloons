@@ -57,8 +57,7 @@ function render()
         gl.uniform1f(gl.getUniformLocation(gl.program, "ks"), gl.ballKs[i]);
         gl.uniform1f(gl.getUniformLocation(gl.program, "s"), gl.ballS[i]);
 
-        for(let j=4; j<gl.pointsArray.length; j+=3)
-            gl.drawArrays(gl.TRIANGLES, j, 3);
+        drawSphere(gl);
     }
 
     requestAnimationFrame(render)
