@@ -17,6 +17,7 @@ window.onload = function init()
     decideBallAttributes(gl);
 
     document.getElementById("recomputeButton").onclick = function(){
+        labelmap = false;
         decideScene(gl);
         decideBallAttributes(gl);
     };
