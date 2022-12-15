@@ -8,4 +8,4 @@ cleandata:
 	rm -r dataset/**/*.png
 
 train:
-	python imgseg02561/train.py training --name resnet50
+	python imgseg02561/train.py training --data-path ~/Dokumenter/cocodata --name resnet50
