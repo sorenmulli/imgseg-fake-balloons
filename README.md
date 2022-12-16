@@ -18,4 +18,4 @@ cocodata/
 │  ├─ ...
 ```
 ### Run experiment
-See/run commands by running `make`, then `make data`, then `make train`
+See or run commands by running `make`, then `make data`, then `make train`

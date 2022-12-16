@@ -3,9 +3,10 @@ from typing import List
 from pelutils import log
 import torch
 from torch import nn
+import numpy as np
 import torchvision
 from torch.optim.lr_scheduler import PolynomialLR
-from torchvision.datasets.coco import CocoDetection
+from sklearn.metrics import jaccard_score, f1_score
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -38,33 +39,45 @@ def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
         log.debug("Starting batch")
         image, target = image.to(DEVICE), target.to(DEVICE)
         log.debug("Model forward pass")
-        output = model(image)
+        output = model(image)["out"]
 
-        # TODO: Ignore index?
-        log.debug("Model forward pass")
-        loss = nn.functional.cross_entropy(output, target)
+        log.debug("Backward pass")
+        loss = nn.functional.cross_entropy(output, target, ignore_index=255)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         lr_scheduler.step()
 
         losses.append(float(loss.item()))
-        log(f"loss={loss.item()}")
-        log(f"lr={optimizer.param_groups[0]['lr']}")
+        log.debug(f"loss={loss.item()}")
+        log.debug(f"lr={optimizer.param_groups[0]['lr']}")
     log.debug("Finished epoch")
-    return losses
+    log(f"Avg loss: {np.mean(losses):.3f}")
 
 
 def evaluate(model, data_loader):
+    targets, preds = [], []
     model.eval()
     with torch.inference_mode():
         for image, target in data_loader:
+            log.debug("Eval batch")
             image, target = image.to(DEVICE), target.to(DEVICE)
             output = model(image)
             output = output["out"]
 
-            target = target.flatten()
-            pred = output.argmax(1).flatten()
+            targets.append(target.flatten().numpy())
+            preds.append(output.argmax(1).flatten().numpy())
+    report_results(targets, preds)
+
+
+def report_results(targets: List[np.ndarray], preds: List[np.ndarray]):
+    log(
+        f"Accuracy : {100 * np.mean([(t == p).mean() for t, p in zip(targets, preds)]):.1f}%",
+        f"Micro IoU: {100 * np.mean([jaccard_score(t, p, average='micro') for t, p in zip(targets, preds)]):.1f}%",
+        f"Macro IoU: {100 * np.mean([jaccard_score(t, p, average='macro') for t, p in zip(targets, preds)]):.1f}%",
+        f"Micro F1 : {100 * np.mean([f1_score(t, p, average='micro') for t, p in zip(targets, preds)]):.1f}%",
+        f"Macro F1 : {100 * np.mean([f1_score(t, p, average='macro') for t, p in zip(targets, preds)]):.1f}%",
+    )
 
 
 def cat_list(images, fill_value=0):

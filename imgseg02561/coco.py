@@ -8,7 +8,6 @@ import torchvision
 from PIL import Image
 from pycocotools import mask as coco_mask
 
-
 from imgseg02561.transforms import Compose
 
 
@@ -88,10 +87,11 @@ def _coco_remove_images_without_annotations(dataset, cat_list=None):
     dataset = torch.utils.data.Subset(dataset, ids)
     return dataset
 
-def get_coco(root, split, transforms, data_limit: Optional[int]):
+
+def get_coco(root, split, transforms, data_limit: Optional[int] = None):
     PATHS = {
-        # "train": ("train2017", "instances_train2017.json"),
-        "train": ("val2017", "instances_val2017.json"),  # FIXME
+        "train": ("train2017", "instances_train2017.json"),
+        "val": ("val2017", "instances_val2017.json"),
     }
     CAT_LIST = [
         0,
