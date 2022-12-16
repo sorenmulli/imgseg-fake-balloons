@@ -9,30 +9,39 @@ from torchvision.datasets.coco import CocoDetection
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 def get_model(classes: int):
     model = torchvision.models.segmentation.fcn_resnet50(
-        weights=None, num_classes=classes,
+        weights=None,
+        num_classes=classes,
     )
     return model.eval().to(DEVICE)
 
+
 def get_optimizer(model):
-    return torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.09, weight_decay=1e-4)
+    return torch.optim.SGD(
+        model.parameters(), lr=0.02, momentum=0.09, weight_decay=1e-4
+    )
+
 
 def get_scheduler(optimizer, data_loader, args):
     return PolynomialLR(
         optimizer, total_iters=len(data_loader) * args.epochs, power=0.9
     )
 
-def train_one_epoch(
-    model,  optimizer, data_loader, lr_scheduler
-) -> List[float]:
+
+def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
+    log.debug("Starting epoch")
     losses = []
     model.train()
     for image, target in data_loader:
+        log.debug("Starting batch")
         image, target = image.to(DEVICE), target.to(DEVICE)
+        log.debug("Model forward pass")
         output = model(image)
 
-        #TODO: Ignore index?
+        # TODO: Ignore index?
+        log.debug("Model forward pass")
         loss = nn.functional.cross_entropy(output, target)
         optimizer.zero_grad()
         loss.backward()
@@ -40,8 +49,9 @@ def train_one_epoch(
         lr_scheduler.step()
 
         losses.append(float(loss.item()))
-        log.debug(f"loss={loss.item()}")
-        log.debug(f"lr={optimizer.param_groups[0]['lr']}")
+        log(f"loss={loss.item()}")
+        log(f"lr={optimizer.param_groups[0]['lr']}")
+    log.debug("Finished epoch")
     return losses
 
 
@@ -55,6 +65,7 @@ def evaluate(model, data_loader):
 
             target = target.flatten()
             pred = output.argmax(1).flatten()
+
 
 def cat_list(images, fill_value=0):
     max_size = tuple(max(s) for s in zip(*[img.shape for img in images]))
@@ -70,6 +81,7 @@ def collate_fn(batch):
     batched_imgs = cat_list(images, fill_value=0)
     batched_targets = cat_list(targets, fill_value=255)
     return batched_imgs, batched_targets
+
 
 def get_data_loader(dataset, train, batch_size: int):
     return torch.utils.data.DataLoader(

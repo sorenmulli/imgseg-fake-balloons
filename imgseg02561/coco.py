@@ -1,5 +1,6 @@
 import copy
 import os
+from typing import Optional
 
 import torch
 import torch.utils.data
@@ -7,14 +8,9 @@ import torchvision
 from PIL import Image
 from pycocotools import mask as coco_mask
 
-class Compose:
-    def __init__(self, transforms):
-        self.transforms = transforms
 
-    def __call__(self, image, target):
-        for t in self.transforms:
-            image, target = t(image, target)
-        return image, target
+from imgseg02561.transforms import Compose
+
 
 class FilterAndRemapCocoCategories:
     def __init__(self, categories, remap=True):
@@ -92,23 +88,53 @@ def _coco_remove_images_without_annotations(dataset, cat_list=None):
     dataset = torch.utils.data.Subset(dataset, ids)
     return dataset
 
-
-def get_coco(root, split, transforms):
+def get_coco(root, split, transforms, data_limit: Optional[int]):
     PATHS = {
-        "train": ("train2017", "instances_train2017.json"),
-        "val": ("val2017", "instances_val2017.json"),
+        # "train": ("train2017", "instances_train2017.json"),
+        "train": ("val2017", "instances_val2017.json"),  # FIXME
     }
-    CAT_LIST = [0, 5, 2, 16, 9, 44, 6, 3, 17, 62, 21, 67, 18, 19, 4, 1, 64, 20, 63, 7, 72]
+    CAT_LIST = [
+        0,
+        5,
+        2,
+        16,
+        9,
+        44,
+        6,
+        3,
+        17,
+        62,
+        21,
+        67,
+        18,
+        19,
+        4,
+        1,
+        64,
+        20,
+        63,
+        7,
+        72,
+    ]
 
-    transforms = Compose([FilterAndRemapCocoCategories(CAT_LIST, remap=True), ConvertCocoPolysToMask(), transforms])
+    transforms = Compose(
+        [
+            FilterAndRemapCocoCategories(CAT_LIST, remap=True),
+            ConvertCocoPolysToMask(),
+            transforms,
+        ]
+    )
 
     img_folder, ann_file = PATHS[split]
     img_folder = os.path.join(root, img_folder)
     ann_file = os.path.join(root, ann_file)
 
-    dataset = torchvision.datasets.CocoDetection(img_folder, ann_file, transforms=transforms)
+    dataset = torchvision.datasets.CocoDetection(
+        img_folder, ann_file, transforms=transforms
+    )
 
     if split == "train":
         dataset = _coco_remove_images_without_annotations(dataset, CAT_LIST)
-
+    if data_limit is not None:
+        dataset = torch.utils.data.Subset(dataset, torch.arange(data_limit))
     return dataset
