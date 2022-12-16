@@ -65,8 +65,8 @@ def evaluate(model, data_loader):
             output = model(image)
             output = output["out"]
 
-            targets.append(target.flatten().numpy())
-            preds.append(output.argmax(1).flatten().numpy())
+            targets.append(target.flatten().cpu().numpy())
+            preds.append(output.argmax(1).flatten().cpu().numpy())
     report_results(targets, preds)
 
 
