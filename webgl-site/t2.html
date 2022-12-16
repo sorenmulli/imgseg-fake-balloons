@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task 2</title>
+    <!-- WebGL helpers -->
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+
+    <!-- Exercise solution -->
+    <script type="text/javascript" src="scene.js"></script>
+    <script type="text/javascript" src="sphere.js"></script>
+    <script type="text/javascript" src="randomness.js"></script>
+    <script type="text/javascript" src="vanillaPickerMinified.js"></script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_Position, a_Normal;
+
+        uniform mat4 M, P, V;
+        uniform mat3 N;
+        uniform vec4 lightPos;
+
+        uniform bool background;
+
+        varying vec3 w_i, w_o, n;
+        void main() {
+            if (background) {
+                n = a_Normal.xyz;
+                gl_Position = a_Position;
+            } else {
+                vec4 pos =  V * M * a_Position;
+                vec3 light = (V * lightPos).xyz;
+
+                n = normalize(N * (a_Normal).xyz);
+                w_i = lightPos.w == 0.0 ? normalize(light) : normalize(light - pos.xyz);
+                w_o = -normalize((V * a_Position).xyz);
+
+                gl_Position = P * pos;
+            }
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        uniform vec3 Le;
+        uniform float ka, kd, ks, s;
+
+        uniform bool background;
+        uniform bool do_sc;
+
+        varying vec3  w_i, w_o, n;
+        uniform float noiseScale;
+
+        // permutation polynomial for the ring Z/289Z
+        float permute(float x) { return mod(34.0*x*x + x, 289.0); }
+
+        float get_index(vec3 pi) { return permute(pi.x + permute(pi.y + permute(pi.z))); }
+        vec3 pweights(vec3 t) { return t*t*t*(t*(t*6.0 - 15.0) + 10.0); }
+
+        vec3 gradient(float idx)
+        {
+          float i = mod(idx, 12.0);
+          i = i < 0.0 ? i + 12.0 : i;
+          vec2 bits = mod(vec2(i, floor(i*0.5)), 2.0);
+          vec2 signs = mix(vec2(1.0), vec2(-1.0), step(0.5, bits));
+          vec3 G;
+          G.x = i < 7.5 ? signs.x : 0.0;
+          G.y = i < 3.5 ? signs.y : (i > 7.5 ? signs.x : 0.0);
+          G.z = i > 3.5 ? signs.y : 0.0;
+          return G;
+        }
+
+        float pnoise(vec3 p)
+        {
+          vec3 pi0 = floor(p);
+          vec3 uvw = p - pi0;
+          vec3 weights = pweights(uvw);
+
+          float noise_sum = 0.0;
+          for(float i = 0.0; i < 7.5; ++i)
+          {
+            vec3 corner = mod(vec3(i, floor(i*0.5), floor(i*0.25)), 2.0);
+            vec3 pi = pi0 + corner;
+            vec3 w = mix(1.0 - weights, weights, step(0.5, corner));
+            float d = dot(uvw - corner, gradient(get_index(pi)));
+            noise_sum += w.x*w.y*w.z*d;
+          }
+          return noise_sum;
+        }
+
+        // Knuth pseudo-random number generator
+        const float BEE = 3125.0;
+        const float CEE = 49.0;
+        const float RANGE = 65536.0;
+        float rnd(inout float t)
+        {
+          t = mod(t*BEE + CEE, RANGE);
+          return t/RANGE;
+        }
+        float cubic(vec3 v)
+        {
+          float x = 1.0 - dot(v, v)*4.0;
+          return step(0.0, x)*x*x*x;
+        }
+        // sparse convolution noise
+        float scnoise(vec3 p)
+        {
+          const float sources = 30.0;
+          float a = 0.8*pow(sources, -1.0/3.0);
+          vec3 pi0 = floor(p - 0.5);
+          float result = 0.0;
+          for(float i = 0.0; i < 7.5; ++i)
+          {
+            vec3 corner = mod(vec3(i, floor(i*0.5), floor(i*0.25)), 2.0);
+            vec3 pi = pi0 + corner;
+            float t = mod(4.0*sources*(pi.x + pi.y*1000.0 + pi.z*576.0), RANGE);
+            for(int j = 0; j < int(sources); ++j)
+            {
+              float c = a*rnd(t)*(j < int(sources)/2 ? 1.0 : -1.0);
+              vec3 xi = vec3(rnd(t), rnd(t), rnd(t));
+              vec3 x = pi + xi;
+              result += c*cubic(x - p);
+            }
+          }
+          return result;
+        }
+        void main() {
+            if (background) {
+                vec3 p = vec3(noiseScale * n.x, noiseScale * n.y, 0);
+                float noise = do_sc ? scnoise(p) : pnoise(p);
+                float noiseIntensity = 0.5 * noise + 0.5;
+                gl_FragColor = vec4(noiseIntensity, noiseIntensity, noiseIntensity, 1.0);
+            } else {
+                float d = max(dot(normalize(n), normalize(w_i)), 0.0);
+                vec3 w_h = normalize(w_i + w_o);
+
+                vec3 p = vec3(noiseScale * n.x, noiseScale * n.y, noiseScale * n.z);
+                float noise = do_sc ? scnoise(p) : pnoise(p);
+                float noiseIntensity = 0.5 * noise + 0.5;
+
+                vec3 lightSpecular = ks * Le * pow(max(dot(normalize(n), w_h), 0.0), s);
+                vec3 lightDiffuse = d * kd * Le * noiseIntensity;
+                vec3 lightAmbient = ka * Le;
+
+                gl_FragColor = vec4(lightDiffuse + lightAmbient + lightSpecular, 1.0);
+            }
+        }
+    </script>
+
+    <script type="text/javascript" src="t2.js"></script>
+    <style>
+        html, body {
+            width: 75%;
+            margin: 10px;
+        }
+        .row {
+            display: flex;
+        }
+        .column {
+            flex: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="column">
+            <canvas id="canvas" width="512" height="512">Please use a browser supporting WebGL</canvas>
+        </div>
+        <div class="column">
+            <p>Change characteristics of all spheres</p> 
+            </br>
+            <button id="recomputeButton">New scene</button> <a id="imgLink"></a>
+            <h2> Color </h2>
+            <div id="color-parent"><u>PRESS ME</u></div>
+            <h2> Shape </h2>
+            <p>
+            0
+            <input type="range" min="0.05" max="0.95" value="0.4" step="0.05" class="slider" id="orient-slider">
+            1
+            </p>
+            <p>
+                <button id="scButton">Use Sparse Convolution Noise</button>
+                <button id="ipButton">Back to Improved Perlin Noise</button>
+            </p>
+            <h2> Noise scale </h2>
+            <p>
+            1
+            <input type="range" min="1" max="51" value="25" step="5" class="slider" id="noise-slider">
+            50
+            </p>
+        </div>
+    </div> 
+</body>
+</html>

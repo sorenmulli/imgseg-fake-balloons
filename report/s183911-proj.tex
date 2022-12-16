@@ -5,7 +5,9 @@
 \usepackage{MediocreMike}
 %\usepackage{Blastoise}
 
-\title{Synthesising Abstract Deep Learning Training Data}
+\usepackage[backend=biber, style=alphabetic, citestyle=alphabetic, maxcitenames=4, maxbibnames=4, mincitenames=2]{biblatex}
+
+\title{Synthesising Abstract Deep Computer Vision Pretraining Data}
 
 \author{Søren Winkel Holm, s183911}
 \date{\today}
@@ -20,6 +22,7 @@
 
 \graphicspath{{imgs/}}
 \linespread{1.15}
+\addbibresource{references.bib}
 
 \begin{document}
 
@@ -38,10 +41,17 @@ In the field of computer vision, deep learning is often used to solve problems s
 \section{Method}%
 \label{sec:method}
 \subsection{Synthetic Scene Rendering}
-\paragraph{Noise Functions}
-\paragraph{The Simple Scene}
-\paragraph{Random Scenes}
-\paragraph{The Full Scene With Label Maps}
+\paragraph{Task 1: Noise Functions and The Simple Scene}
+In the fragment shader, two noise functions were implemented, both accepting three-dimensional vector input.
+\begin{enumerate}
+    \item Improved Perlin (IP) noise using a permutation polynomial as \citeauthor{mcewan2012efficient} \cite{mcewan2012efficient}.
+    \item Sparse convolution (SC) noise as \citeauthor{frisvad2007fast} \cite{frisvad2007fast}.
+\end{enumerate}
+The implementations were largely based on reference implementations \cite{frisvad2016exploring}:
+Only minor code changes and commenting were performed along with using the functions to texture the scene objects with a given noise scale.
+\paragraph{Task 2: Random Scenes}
+\paragraph{Task 3: Object Classes}
+\paragraph{Task 4: The Full Scene With Label Maps}
 % \begin{itemize}
 %     \item Render a single sphere (using recursive subdivision) lighted by directional light using Phong shading. Texture the sphere using the noise functions from here. Allow user input controlling noise type and some of the parameters.
 %     \item Add multiple spheres to the scene, randomly selecting placement and size for each.
@@ -52,7 +62,7 @@ In the field of computer vision, deep learning is often used to solve problems s
 % \end{itemize}
 
 \subsection{Deep Image Segmentation}
-\paragraph{Baseline Task}
+\paragraph{Baseline Learning Task}
 \paragraph{Addition of Synthetic Pretraining Data}
 
 \section{Results}%
@@ -63,5 +73,10 @@ In the field of computer vision, deep learning is often used to solve problems s
 \begin{enumerate}
     \item Powerful benchmark for different methods generalization towards different difficulties: Explainability
 \end{enumerate}
+
+\clearpage
+
+\printbibliography[heading=bibintoc]
+
 
 \end{document}
