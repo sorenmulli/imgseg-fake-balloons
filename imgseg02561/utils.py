@@ -32,16 +32,12 @@ def get_scheduler(optimizer, data_loader, args):
 
 
 def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
-    log.debug("Starting epoch")
     losses = []
     model.train()
-    for image, target in data_loader:
-        log.debug("Starting batch")
+    for i, (image, target) in enumerate(data_loader):
         image, target = image.to(DEVICE), target.to(DEVICE)
-        log.debug("Model forward pass")
         output = model(image)["out"]
 
-        log.debug("Backward pass")
         loss = nn.functional.cross_entropy(output, target, ignore_index=255)
         optimizer.zero_grad()
         loss.backward()
@@ -49,9 +45,7 @@ def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
         lr_scheduler.step()
 
         losses.append(float(loss.item()))
-        log.debug(f"loss={loss.item()}")
-        log.debug(f"lr={optimizer.param_groups[0]['lr']}")
-    log.debug("Finished epoch")
+        log.debug(f"Finished batch {i+1}/{len(data_loader)}, loss={loss.item():.3f}, lr={optimizer.param_groups[0]['lr']:.3f}")
     log(f"Avg loss: {np.mean(losses):.3f}")
 
 
@@ -59,8 +53,8 @@ def evaluate(model, data_loader):
     targets, preds = [], []
     model.eval()
     with torch.inference_mode():
-        for image, target in data_loader:
-            log.debug("Eval batch")
+        for i, (image, target) in enumerate(data_loader):
+            log.debug(f"Eval batch {i+1}/{len(data_loader)}")
             image, target = image.to(DEVICE), target.to(DEVICE)
             output = model(image)
             output = output["out"]

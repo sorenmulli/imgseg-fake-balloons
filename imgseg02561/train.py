@@ -42,7 +42,7 @@ def downstream(model, args: JobDescription):
     dataset_train = get_coco(
         args.coco_path, "train", get_transform(), data_limit=args.coco_limit or None
     )
-    dataset_val = get_coco(args.coco_path, "val", get_transform())
+    dataset_val = get_coco(args.coco_path, "val", get_transform(), data_limit=1000)
 
     data_loader_train = get_data_loader(dataset_train, True, args.batch_size)
     data_loader_val = get_data_loader(dataset_val, False, args.batch_size)
@@ -66,7 +66,7 @@ def mutate_for_downstream(model):
 def run(args: JobDescription):
     set_seeds()
     model = get_model(args.classes)
-    #pretrain(model, args)
+    pretrain(model, args)
     model = mutate_for_downstream(model)
     downstream(model, args)
 
