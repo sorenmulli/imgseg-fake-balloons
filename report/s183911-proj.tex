@@ -5,7 +5,7 @@
 \usepackage{MediocreMike}
 %\usepackage{Blastoise}
 
-\title{Noise Functions for Synthesising Abstract Deep Learning Training Data}
+\title{Synthesising Abstract Deep Learning Training Data}
 
 \author{Søren Winkel Holm, s183911}
 \date{\today}
@@ -37,27 +37,31 @@ In the field of computer vision, deep learning is often used to solve problems s
 
 \section{Method}%
 \label{sec:method}
+\subsection{Synthetic Scene Rendering}
+\paragraph{Noise Functions}
+\paragraph{The Simple Scene}
+\paragraph{Random Scenes}
+\paragraph{The Full Scene With Label Maps}
+% \begin{itemize}
+%     \item Render a single sphere (using recursive subdivision) lighted by directional light using Phong shading. Texture the sphere using the noise functions from here. Allow user input controlling noise type and some of the parameters.
+%     \item Add multiple spheres to the scene, randomly selecting placement and size for each.
+%     \item Choose a number of classes (maybe 3) and give each class a distribution of shapes, of colours and a distribution of noise parameters (such as related smoothing and scale). Assign each sphere to a class and let its shape, colour and noise be sampled from the class prior. (I will be using spheres and for shape I will use a model matrix that transforms the sphere into an ellipsoid by stretching it. The amount of stretching should thus be determined by object class)
+%     \item Add the possibility of producing the label image by having a rendering mode which does not have any lighting or texturing, just colours each object according to its class. This image will then have the class in the pixel position according to the object at that pixel position. Allow for saving the current canvas to a png.
+%     \item Generate a large number (about 1000) of scenes and corresponding label maps.
+%     % \item Follow a classic deep learning image segmentation benchmark such as SegNet on a subset of the Coco dataset. First test normal performance. Then pretrain the model on the generated images before transfer learning it to the coco task and compare performance. Compare performance between noise functions.
+% \end{itemize}
 
-\begin{itemize}
-    \item Render a single sphere (using recursive subdivision) lighted by directional light using Phong shading. Texture the sphere using the noise functions from here. Allow user input controlling noise type and some of the parameters.
-    \item Add multiple spheres to the scene, randomly selecting placement and size for each.
-    \item Choose a number of classes (maybe 3) and give each class a distribution of shapes, of colours and a distribution of noise parameters (such as related smoothing and scale). Assign each sphere to a class and let its shape, colour and noise be sampled from the class prior. (I will be using spheres and for shape I will use a model matrix that transforms the sphere into an ellipsoid by stretching it. The amount of stretching should thus be determined by object class)
-    \item Add the possibility of producing the label image by having a rendering mode which does not have any lighting or texturing, just colours each object according to its class. This image will then have the class in the pixel position according to the object at that pixel position. Allow for saving the current canvas to a png.
-    \item Generate a large number (about 1000) of scenes and corresponding label maps.
-    % \item Follow a classic deep learning image segmentation benchmark such as SegNet on a subset of the Coco dataset. First test normal performance. Then pretrain the model on the generated images before transfer learning it to the coco task and compare performance. Compare performance between noise functions.
-\end{itemize}
+\subsection{Deep Image Segmentation}
+\paragraph{Baseline Task}
+\paragraph{Addition of Synthetic Pretraining Data}
 
 \section{Results}%
 \label{sec:results}
 
 \section{Discussion}%
 \label{sec:disc}
-
-
-
-
-
-
+\begin{enumerate}
+    \item Powerful benchmark for different methods generalization towards different difficulties: Explainability
+\end{enumerate}
 
 \end{document}
-
