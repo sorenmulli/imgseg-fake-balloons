@@ -1,6 +1,7 @@
 import os
 
 from pelutils import JobDescription, log, set_seeds
+import torch
 
 from imgseg02561.coco import get_coco
 from imgseg02561.fake_balloons import FakeBalloons
@@ -20,14 +21,19 @@ COCO_CLASSES = 21
 
 def pretrain(model, args: JobDescription):
     optimizer = get_optimizer(model)
-    dataset = FakeBalloons(args.fake_balloons_path, transforms=get_transform())
-    data_loader_train = get_data_loader(dataset, True, args.batch_size)
-    data_loader_val = get_data_loader(dataset, False, args.batch_size)
+    full_dataset = FakeBalloons(args.fake_balloons_path, transforms=get_transform())
+    split_idx = int(len(full_dataset) * 0.9)
+    train_dataset = torch.utils.data.Subset(full_dataset, torch.arange(split_idx))
+    val_dataset = torch.utils.data.Subset(full_dataset, torch.arange(split_idx, len(full_dataset)))
+
+    data_loader_train = get_data_loader(train_dataset, True, args.batch_size)
+    data_loader_val = get_data_loader(val_dataset, False, args.batch_size)
 
     scheduler = get_scheduler(optimizer, data_loader_train, args)
     for epoch in range(args.epochs):
         log(f"Epoch {epoch+1}/{args.epochs}")
         train_one_epoch(model, optimizer, data_loader_train, scheduler)
+        # FIXME: Evaluate code too slow
         evaluate(model, data_loader_val)
 
 
@@ -60,7 +66,7 @@ def mutate_for_downstream(model):
 def run(args: JobDescription):
     set_seeds()
     model = get_model(args.classes)
-    pretrain(model, args)
+    #pretrain(model, args)
     model = mutate_for_downstream(model)
     downstream(model, args)
 
