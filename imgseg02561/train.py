@@ -1,6 +1,6 @@
 import os
 
-from pelutils import JobDescription, LogLevels, log, set_seeds
+from pelutils import JobDescription, log, set_seeds
 
 from imgseg02561.coco import get_coco
 from imgseg02561.fake_balloons import FakeBalloons
@@ -21,10 +21,6 @@ COCO_CLASSES = 21
 def pretrain(model, args: JobDescription):
     optimizer = get_optimizer(model)
     dataset = FakeBalloons(args.fake_balloons_path, transforms=get_transform())
-    import torch
-
-    dataset = torch.utils.data.Subset(dataset, torch.arange(3))
-
     data_loader_train = get_data_loader(dataset, True, args.batch_size)
     data_loader_val = get_data_loader(dataset, False, args.batch_size)
 
@@ -40,9 +36,9 @@ def downstream(model, args: JobDescription):
     dataset_train = get_coco(
         args.coco_path, "train", get_transform(), data_limit=args.coco_limit or None
     )
-    data_loader_train = get_data_loader(dataset_train, True, args.batch_size)
+    dataset_val = get_coco(args.coco_path, "val", get_transform())
 
-    dataset_val = get_coco(args.coco_path, "val", get_transform(), data_limit=4)
+    data_loader_train = get_data_loader(dataset_train, True, args.batch_size)
     data_loader_val = get_data_loader(dataset_val, False, args.batch_size)
 
     scheduler = get_scheduler(optimizer, data_loader_train, args)
@@ -76,7 +72,7 @@ if __name__ == "__main__":
         Argument("fake-balloons-path"),
         Argument("coco-path"),
         Option("classes", type=int, default=4),
-        Option("coco_limit", type=int, default=0),
+        Option("coco-limit", type=int, default=0),
         Option("epochs", type=int, default=10),
         Option("batch-size", type=int, default=32),
         multiple_jobs=True,
