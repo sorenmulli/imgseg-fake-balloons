@@ -1,3 +1,5 @@
+# Synthetic Semantic Segmentation Training Data using WebGL
+Course project for 02561 Computer Graphics at the Technical University of Denmark.
 
 ## Reproduction
 ### Get COCO data
