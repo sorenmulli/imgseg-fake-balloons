@@ -4,4 +4,4 @@ tqdm
 torch
 torchvision
 pycocotools
-sklearn
+torchmetrics

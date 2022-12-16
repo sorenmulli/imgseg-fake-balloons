@@ -1,4 +1,5 @@
 from typing import List
+from dataclasses import dataclass
 
 from pelutils import log
 import torch
@@ -6,7 +7,7 @@ from torch import nn
 import numpy as np
 import torchvision
 from torch.optim.lr_scheduler import PolynomialLR
-from sklearn.metrics import jaccard_score, f1_score
+from torchmetrics import F1Score, JaccardIndex, Accuracy
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -48,30 +49,53 @@ def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
         log.debug(f"Finished batch {i+1}/{len(data_loader)}, loss={loss.item():.3f}, lr={optimizer.param_groups[0]['lr']:.3f}")
     log(f"Avg loss: {np.mean(losses):.3f}")
 
+@dataclass
+class EvalResults:
+    micro_accs: List[float]
+    macro_accs: List[float]
+    micro_ious: List[float]
+    macro_ious: List[float]
+    micro_f1s: List[float]
+    macro_f1s: List[float]
 
-def evaluate(model, data_loader):
-    targets, preds = [], []
+
+    def __str__(self):
+        return "\n".join([
+            f"Micro Accuracy : {100 * np.mean(self.micro_accs):.1f}%",
+            f"Macro Accuracy : {100 * np.mean(self.macro_accs):.1f}%",
+            f"Micro IoU: {100 * np.mean(self.micro_ious):.1f}%",
+            f"Macro IoU: {100 * np.mean(self.macro_ious):.1f}%",
+            f"Micro F1 : {100 * np.mean(self.micro_f1s):.1f}%",
+            f"Macro F1 : {100 * np.mean(self.macro_f1s):.1f}%",
+        ])
+
+
+
+def evaluate(model, data_loader, classes: int):
     model.eval()
+    res = EvalResults([], [], [], [], [], [])
+    args = dict(task="multiclass", num_classes=classes)
+    mi_acc  = Accuracy(**args, average="micro")
+    ma_acc  = Accuracy(**args, average="macro")
+    mi_iou  = JaccardIndex(**args, average="micro")
+    ma_iou  = JaccardIndex(**args, average="macro")
+    mi_f1   = F1Score(**args, average="micro")
+    ma_f1   = F1Score(**args, average="macro")
     with torch.inference_mode():
         for i, (image, target) in enumerate(data_loader):
             log.debug(f"Eval batch {i+1}/{len(data_loader)}")
             image, target = image.to(DEVICE), target.to(DEVICE)
-            output = model(image)
-            output = output["out"]
+            output = model(image)["out"]
 
-            targets.append(target.flatten().cpu().numpy())
-            preds.append(output.argmax(1).flatten().cpu().numpy())
-    report_results(targets, preds)
-
-
-def report_results(targets: List[np.ndarray], preds: List[np.ndarray]):
-    log(
-        f"Accuracy : {100 * np.mean([(t == p).mean() for t, p in zip(targets, preds)]):.1f}%",
-        f"Micro IoU: {100 * np.mean([jaccard_score(t, p, average='micro') for t, p in zip(targets, preds)]):.1f}%",
-        f"Macro IoU: {100 * np.mean([jaccard_score(t, p, average='macro') for t, p in zip(targets, preds)]):.1f}%",
-        f"Micro F1 : {100 * np.mean([f1_score(t, p, average='micro') for t, p in zip(targets, preds)]):.1f}%",
-        f"Macro F1 : {100 * np.mean([f1_score(t, p, average='macro') for t, p in zip(targets, preds)]):.1f}%",
-    )
+            true = target.flatten()
+            pred = output.argmax(1).flatten()
+            res.micro_accs.append(float(mi_acc(pred, true).cpu().item()))
+            res.macro_accs.append(float(ma_acc(pred, true).cpu().item()))
+            res.micro_ious.append(float(mi_iou(pred, true).cpu().item()))
+            res.macro_ious.append(float(ma_iou(pred, true).cpu().item()))
+            res.micro_f1s.append(float(mi_f1(pred, true).cpu().item()))
+            res.macro_f1s.append(float(ma_f1(pred, true).cpu().item()))
+    log(res)
 
 
 def cat_list(images, fill_value=0):

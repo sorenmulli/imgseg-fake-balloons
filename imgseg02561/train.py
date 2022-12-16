@@ -33,8 +33,7 @@ def pretrain(model, args: JobDescription):
     for epoch in range(args.epochs):
         log(f"Epoch {epoch+1}/{args.epochs}")
         train_one_epoch(model, optimizer, data_loader_train, scheduler)
-        # FIXME: Evaluate code too slow
-        evaluate(model, data_loader_val)
+        evaluate(model, data_loader_val, args.classes)
 
 
 def downstream(model, args: JobDescription):
@@ -51,7 +50,7 @@ def downstream(model, args: JobDescription):
     for epoch in range(args.epochs):
         log(f"Epoch {epoch+1}/{args.epochs}")
         train_one_epoch(model, optimizer, data_loader_train, scheduler)
-        evaluate(model, data_loader_val)
+        evaluate(model, data_loader_val, COCO_CLASSES)
 
 
 def mutate_for_downstream(model):
@@ -66,13 +65,14 @@ def mutate_for_downstream(model):
 def run(args: JobDescription):
     set_seeds()
     model = get_model(args.classes)
-    pretrain(model, args)
+    if not args.skip_pretrain:
+        pretrain(model, args)
     model = mutate_for_downstream(model)
     downstream(model, args)
 
 
 if __name__ == "__main__":
-    from pelutils import Parser, Option, Argument
+    from pelutils import Parser, Option, Argument, Flag
 
     parser = Parser(
         Argument("fake-balloons-path"),
@@ -81,6 +81,7 @@ if __name__ == "__main__":
         Option("coco-limit", type=int, default=0),
         Option("epochs", type=int, default=10),
         Option("batch-size", type=int, default=32),
+        Flag("skip-pretrain"),
         multiple_jobs=True,
     )
 
