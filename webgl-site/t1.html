@@ -131,21 +131,21 @@
                 float noiseIntensity = 0.5 * noise + 0.5;
                 gl_FragColor = vec4(noiseIntensity, noiseIntensity, noiseIntensity, 1.0);
             } else {
-                float d = max(dot(normalize(n), normalize(w_i)), 0.0);
-                vec3 w_h = normalize(w_i + w_o);
+// Use normal vectors to get smooth noise over sphere
+vec3 p = vec3(noiseScale * n.x, noiseScale * n.y, noiseScale * n.z);
+float noise = do_sc ? scnoise(p) : pnoise(p);
+float noiseIntensity = 0.5 * noise + 0.5;
 
-                vec3 p = vec3(noiseScale * n.x, noiseScale * n.y, noiseScale * n.z);
-                float noise = do_sc ? scnoise(p) : pnoise(p);
-                float noiseIntensity = 0.5 * noise + 0.5;
+// Phong lighting using noise intensity for diffuse radiance
+float d = max(dot(normalize(n), normalize(w_i)), 0.0);
+vec3 w_h = normalize(w_i + w_o);
+vec3 lightSpecular = ks * Le * pow(max(dot(normalize(n), w_h), 0.0), s);
+vec3 lightDiffuse = d * kd * Le * noiseIntensity;
+vec3 lightAmbient = ka * Le;
 
-                vec3 lightSpecular = ks * Le * pow(max(dot(normalize(n), w_h), 0.0), s);
-                vec3 lightDiffuse = d * kd * Le * noiseIntensity;
-                vec3 lightAmbient = ka * Le;
-
-                gl_FragColor = vec4(lightDiffuse + lightAmbient + lightSpecular, 1.0);
+gl_FragColor = vec4(lightDiffuse + lightAmbient + lightSpecular, 1.0);
             }
         }
-    </script>
     </script>
 
     <script type="text/javascript" src="t1.js"></script>

@@ -1,4 +1,4 @@
-const lightPosVal = vec4(0.0, 0.0, 1.05, 0.0)
+const lightPosVal = vec4(0.0, 0.0, 2.0, 1.0)
 const LeRadiance = 1.0;
 const LeVal = vec3(LeRadiance, 0.0, 0.0);
 const kaVal = 0.1;
