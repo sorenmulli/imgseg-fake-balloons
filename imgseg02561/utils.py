@@ -74,13 +74,13 @@ class EvalResults:
 def evaluate(model, data_loader, classes: int):
     model.eval()
     res = EvalResults([], [], [], [], [], [])
-    args = dict(task="multiclass", num_classes=classes)
-    mi_acc  = Accuracy(**args, average="micro")
-    ma_acc  = Accuracy(**args, average="macro")
-    mi_iou  = JaccardIndex(**args, average="micro")
-    ma_iou  = JaccardIndex(**args, average="macro")
-    mi_f1   = F1Score(**args, average="micro")
-    ma_f1   = F1Score(**args, average="macro")
+    args = dict(task="multiclass", num_classes=classes, ignore_index=255)
+    mi_acc = Accuracy(**args, average="micro").to(DEVICE)
+    ma_acc = Accuracy(**args, average="macro").to(DEVICE)
+    mi_iou = JaccardIndex(**args, average="micro").to(DEVICE)
+    ma_iou = JaccardIndex(**args, average="macro").to(DEVICE)
+    mi_f1 = F1Score(**args, average="micro").to(DEVICE)
+    ma_f1 = F1Score(**args, average="macro").to(DEVICE)
     with torch.inference_mode():
         for i, (image, target) in enumerate(data_loader):
             log.debug(f"Eval batch {i+1}/{len(data_loader)}")

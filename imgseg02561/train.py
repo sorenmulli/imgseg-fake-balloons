@@ -30,6 +30,7 @@ def pretrain(model, args: JobDescription):
     data_loader_val = get_data_loader(val_dataset, False, args.batch_size)
 
     scheduler = get_scheduler(optimizer, data_loader_train, args)
+    evaluate(model, data_loader_val, args.classes)
     for epoch in range(args.epochs):
         log(f"Epoch {epoch+1}/{args.epochs}")
         train_one_epoch(model, optimizer, data_loader_train, scheduler)
@@ -47,6 +48,7 @@ def downstream(model, args: JobDescription):
     data_loader_val = get_data_loader(dataset_val, False, args.batch_size)
 
     scheduler = get_scheduler(optimizer, data_loader_train, args)
+    evaluate(model, data_loader_val, COCO_CLASSES)
     for epoch in range(args.epochs):
         log(f"Epoch {epoch+1}/{args.epochs}")
         train_one_epoch(model, optimizer, data_loader_train, scheduler)
