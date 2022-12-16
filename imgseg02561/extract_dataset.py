@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 SRCPATH = sys.argv[0]
 
-TARGET = f"file:///" + os.path.realpath(os.path.join(SRCPATH, "..", "..", "t4.html"))
+TARGET = f"file:///" + os.path.realpath(os.path.join(SRCPATH, "..", "..", "webgl-site", "t4.html"))
 DRIVER_PATH = os.path.realpath(os.path.join(SRCPATH, "..", "assets", "geckodriver"))
 
 
@@ -33,9 +33,11 @@ def _setup_driver(outpath: str) -> WebDriver:
         )
 
 
-def extract_image(driver: WebDriver):
+def extract_image(driver: WebDriver, use_sc: bool):
     driver.get(TARGET)
     driver.find_element(value="recomputeButton").click()
+    if use_sc:
+        driver.find_element(value="scButton").click()
     driver.find_element(value="saveButton").click()
     driver.find_element(value="labelMapButton").click()
     driver.find_element(value="saveButton").click()
@@ -44,14 +46,15 @@ def extract_image(driver: WebDriver):
 def run(args: JobDescription):
     driver = _setup_driver(os.path.realpath(args.location))
     for _ in tqdm(range(args.N)):
-        extract_image(driver)
+        extract_image(driver, args.use_sc)
 
 
 if __name__ == "__main__":
-    from pelutils import Parser, Argument
+    from pelutils import Parser, Argument, Flag
 
     parser = Parser(
         Argument("N", type=int, help="Number of images to generate"),
+        Flag("use-sc"),
         multiple_jobs=True,
     )
     jobs = parser.parse_args()
