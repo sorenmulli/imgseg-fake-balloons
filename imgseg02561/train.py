@@ -54,10 +54,10 @@ def downstream(model, args: JobDescription):
 
 def mutate_for_downstream(model):
     old_state = model.state_dict()
-    old_state = {n: p for n, p in old_state.items() if "classifier" not in n}
+    old_state = {n: p for n, p in old_state.items() if "classifier.4" not in n}
     new_model = get_model(COCO_CLASSES)
     missing_keys, unexpected_keys = new_model.load_state_dict(old_state, strict=False)
-    assert not unexpected_keys and all("classifier" in k for k in missing_keys)
+    assert not unexpected_keys and all("classifier.4" in k for k in missing_keys)
     return new_model
 
 
@@ -68,6 +68,7 @@ def run(args: JobDescription):
         pretrain(model, args)
     model = mutate_for_downstream(model)
     downstream(model, args)
+
 
 
 if __name__ == "__main__":
