@@ -61,14 +61,16 @@ function initSphere(gl, numSubdivs) {
     gl.enableVertexAttribArray( vPosition );
 }
 
-function getModel(orient, scale, posx, posy) {
-    let sx = orient * 2.0;
-    let sy = (1 - orient) * 2.0;
-    let norm = 2 ** 0.5 / (sx**2 + sy**2)**0.5;
-    let orientTransform = scalem(sx*norm, sy*norm, 1.0);
+function getModel(rho, scale, posx, posy) {
+let sx = rho;
+let sy = (1 - rho);
+// Make sure that rho=0.5 corresponds to no scaling
+let norm = 2 ** 0.5 / (sx**2 + sy**2)**0.5;
+// Only scale parallel to x or y axis to avoid more free parameters
+let elongationTransform = scalem(sx*norm, sy*norm, 1.0);
     let scaleTransform = scalem(scale, scale, scale);
     let transTransform = translate(posx, posy, 0.0);
-    return mult(transTransform, mult(scaleTransform, orientTransform));
+    return mult(transTransform, mult(scaleTransform, elongationTransform));
 }
 
 function drawSphere(gl) {
