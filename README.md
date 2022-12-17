@@ -8,7 +8,7 @@ Open `webgl-site/index.html` in any modern browser to see the examples.
 
 ### Get Fake Balloons data
 You can build the synthetic dataset yourself; see `make data`.
-The version used in this project is downloadable from Google Drive using the script `dev/download.sh` (be patient; around 5gb).
+The version used in this project is downloadable from Google Drive [here](https://drive.google.com/file/d/1k6ikalUtzpYARzGTrxpVCvUwmP9_EJ9W/view?usp=sharing) and [here](https://drive.google.com/file/d/1psLKuoBt9Ai_bP9zxUFJ_OeGAyxa1jm-/view?usp=sharing) or by running `wget` commands from the script `dev/download.sh`.
 
 ### Get COCO data
 Download 2017 test and val images and annotations from [COCO download page](https://cocodataset.org/#download).
