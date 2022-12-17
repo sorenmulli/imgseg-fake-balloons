@@ -6,7 +6,6 @@ import torch
 from torch import nn
 import numpy as np
 import torchvision
-from torch.optim.lr_scheduler import PolynomialLR
 from torchmetrics import F1Score, JaccardIndex, Accuracy
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,17 +21,11 @@ def get_model(classes: int):
 
 def get_optimizer(model):
     return torch.optim.SGD(
-        model.parameters(), lr=0.02, momentum=0.09, weight_decay=1e-4
+        model.parameters(), lr=0.01,  weight_decay=1e-4
     )
 
 
-def get_scheduler(optimizer, data_loader, args):
-    return PolynomialLR(
-        optimizer, total_iters=len(data_loader) * args.epochs, power=0.9
-    )
-
-
-def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
+def train_one_epoch(model, optimizer, data_loader) -> List[float]:
     losses = []
     model.train()
     for i, (image, target) in enumerate(data_loader):
@@ -43,7 +36,6 @@ def train_one_epoch(model, optimizer, data_loader, lr_scheduler) -> List[float]:
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        lr_scheduler.step()
 
         losses.append(float(loss.item()))
         log.debug(f"Finished batch {i+1}/{len(data_loader)}, loss={loss.item():.3f}, lr={optimizer.param_groups[0]['lr']:.3f}")

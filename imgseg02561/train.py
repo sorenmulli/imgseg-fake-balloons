@@ -10,7 +10,6 @@ from imgseg02561.transforms import get_transform
 from imgseg02561.utils import (
     get_data_loader,
     get_optimizer,
-    get_scheduler,
     train_one_epoch,
     get_model,
     evaluate,
@@ -29,11 +28,10 @@ def pretrain(model, args: JobDescription):
     data_loader_train = get_data_loader(train_dataset, True, args.batch_size)
     data_loader_val = get_data_loader(val_dataset, False, args.batch_size)
 
-    scheduler = get_scheduler(optimizer, data_loader_train, args)
     evaluate(model, data_loader_val, args.classes)
-    for epoch in range(args.epochs):
-        log(f"Epoch {epoch+1}/{args.epochs}")
-        train_one_epoch(model, optimizer, data_loader_train, scheduler)
+    for epoch in range(args.pretrain_epochs):
+        log(f"Epoch {epoch+1}/{args.pretrain_epochs}")
+        train_one_epoch(model, optimizer, data_loader_train)
         evaluate(model, data_loader_val, args.classes)
 
 
@@ -47,11 +45,10 @@ def downstream(model, args: JobDescription):
     data_loader_train = get_data_loader(dataset_train, True, args.batch_size)
     data_loader_val = get_data_loader(dataset_val, False, args.batch_size)
 
-    scheduler = get_scheduler(optimizer, data_loader_train, args)
     evaluate(model, data_loader_val, COCO_CLASSES)
     for epoch in range(args.epochs):
         log(f"Epoch {epoch+1}/{args.epochs}")
-        train_one_epoch(model, optimizer, data_loader_train, scheduler)
+        train_one_epoch(model, optimizer, data_loader_train)
         evaluate(model, data_loader_val, COCO_CLASSES)
 
 
@@ -81,6 +78,7 @@ if __name__ == "__main__":
         Argument("coco-path"),
         Option("classes", type=int, default=4),
         Option("coco-limit", type=int, default=0),
+        Option("pretrain-epochs", type=int, default=20),
         Option("epochs", type=int, default=10),
         Option("batch-size", type=int, default=32),
         Flag("skip-pretrain"),
