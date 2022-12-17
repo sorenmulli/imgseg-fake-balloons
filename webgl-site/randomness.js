@@ -33,13 +33,15 @@ function decideScene(gl) {
         // Round down to class int
         gl.ballClass.push(parseInt(randomRange(0, n_classes-0.0001)));
 
-        // Scene variables are uniformly distributed
-        gl.ballScales.push(randomRange(0.1, 0.7));
-        gl.ballX.push(randomRange(-1.5, 1.5));
-        gl.ballY.push(randomRange(-1.5, 1.5));
-        gl.ballKd.push(randomRange(0.25, 0.75));
-        gl.ballKs.push(randomRange(0.0, 0.5));
-        gl.ballS.push(randomRange(10.0, 100.0));
+// Ball scene variables are uniformly distributed
+gl.ballScales.push(randomRange(0.1, 0.7));
+// Placement
+gl.ballX.push(randomRange(-1.5, 1.5));
+gl.ballY.push(randomRange(-1.5, 1.5));
+// Lighting
+gl.ballKd.push(randomRange(0.25, 0.75)); // Diffuse coefficient
+gl.ballKs.push(randomRange(0.0, 0.5)); // Specular coefficient
+gl.ballS.push(randomRange(10.0, 100.0)); // Shininess
     }
     gl.bgScale = randomRange(1, 20);
     // String of random numbers used to output the image as png
@@ -90,7 +92,7 @@ function decideBallAttributes(gl, avg=false) {
         gl.ballOrient.push(orient);
 
         let noiseScale = avg ? classAvgNoiseScales[cla] : gaussianRandom(classAvgNoiseScales[cla], stdNoiseScale)
-        noiseScale = Math.max(noiseScale, 0.0);
+        noiseScale = Math.max(noiseScale, 1.0);
         gl.ballNoiseScale.push(noiseScale);
     }
 }

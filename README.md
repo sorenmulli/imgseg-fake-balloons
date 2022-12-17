@@ -2,10 +2,17 @@
 Course project for 02561 Computer Graphics at the Technical University of Denmark.
 
 ## Reproduction
+### Setup
+Run `make` to install the Python software.
+Open `webgl-site/index.html` in any modern browser to see the examples.
+
+### Get Fake Balloons data
+You can build the synthetic dataset yourself; see `make data`.
+The version used in this project is downloadable from Google Drive using the script `dev/download.sh` (be patient; around 5gb).
+
 ### Get COCO data
-Download 2017 test and val from [COCO download page](https://cocodataset.org/#download).
-Place in a directory, default is `cocodata` in working directory.
-Structure should be
+Download 2017 test and val images and annotations from [COCO download page](https://cocodataset.org/#download).
+Place in a directory, e.g. `cocodata` where structure should be
 ```
 cocodata/
 ├─ instances_train2017.json
@@ -14,8 +21,9 @@ cocodata/
 │  ├─ 000000000139.jpg
 │  ├─ ...
 ├─ train2017/
-│  ├─ 000000000???.jpg
+│  ├─ 000000000009.jpg
 │  ├─ ...
 ```
-### Run experiment
-See or run commands by running `make`, then `make data`, then `make train`
+### Run experiments
+See `python imgseg02561/train.py --help`. 
+My configuration is run when running `make train` but some paths should be configured to your data location
