@@ -1,7 +1,7 @@
 # Synthetic Semantic Segmentation Training Data using WebGL
 Course project for 02561 Computer Graphics at the Technical University of Denmark.
 
-See [report](report/s183911-proj.pdf) and the example [website](https://www.student.dtu.dk/~s183911/proj/webgl-site/index.html).
+See [report](https://github.com/sorenmulli/imgseg-fake-balloons/blob/master/report/s183911-proj.pdf) and the example [website](https://www.student.dtu.dk/~s183911/proj/webgl-site/index.html).
 
 ## Reproduction
 ### Setup
@@ -28,4 +28,4 @@ cocodata/
 ```
 ### Run experiments
 See `python imgseg02561/train.py --help`. 
-My configuration is run when running `make train` but some paths should be configured to your data location
+My configuration is run when running `make train` but some paths should be configured to your data locations.

@@ -35,7 +35,7 @@
 \label{sec:intro}
 In the field of computer vision, large deep learning models have become the norm for solving semantic classification problems such image segmentation.
 These performant methods have some central problems:
-First of, to start training them, a larger number of images are required with corresponding manually annotated ground truth labels which are costly.
+First of, to start training them, a large number of images are required, each with corresponding costly , manually annotated ground truth labels.
 Secondly, the training proces takes takes a long time and is compute expensive as the model iteratively has to reach convergence from a starting point of randomly initialized parameters.
 Finally, the error modes and interpretations of results are notoriously difficult.
 
@@ -43,12 +43,13 @@ A possible tool to mitigate these issues is the use of synthetic data.
 If models could learn generalizable parametrizations from cheap, computer generated images, the amount of real world data and case by case training time would be reduced.
 Synthetic data could also help to interpret model performance as the generated scenes can be designed to reveal flaws.
 
-For this idea to work, the generated scenes should contain discernable objects and the learning task should require that the model converge to some representations of fundamental principles of object detection.
+For this idea to work, the generated scenes should contain discernable objects and should induce the model to learn representations of fundamental principles of object detection.
 These principles could serve as inductive biases to help the model on real-world tasks.
-One such principle is the modelling of object texture where the model should be able to map local visual patterns to class attributions.
+One such fundamental principle is the modelling of object texture where the model should be able to map local visual patterns to class attributions.
 
 In this project, I will explore an approach to generating such a synthetic dataset and perform tests of applying this dataset to a real-world use case.
 I explore using noise functions to give the objects variations in texture connected to class assignments.
+I note that the idea of synthetic data for computer vision is not unique and appears to be a research and business area of interest \cite{data2022break}.
 
 \section{Methods}%
 \label{sec:method}
@@ -58,21 +59,20 @@ All code is available with reproduction instructions on \href{https://github.com
 In the fragment shader, two noise functions were implemented, both accepting three-dimensional vector input.
 \begin{enumerate}
     \item Improved Perlin noise (PN) using a permutation polynomial as \citeauthor{mcewan2012efficient} \cite{mcewan2012efficient}. 3D PN chooses pseudo-random gradients $\in \RR^3$ at regular grid points in each axis, interpolating a smooth function consistent with the gradients \cite{gustavson2005simplex}. 
-    \item Sparse convolution noise (SC) as \citeauthor{frisvad2007fast} \cite{frisvad2007fast}. SC targets minimal artifacts or patterns by approximates the computationally expensive white noise filtered with a Gaussian kernel using a cubic kernel instead.
+    \item Sparse convolution noise (SC) as \citeauthor{frisvad2007fast} \cite{frisvad2007fast}. SC targets minimal artifacts or patterns by approximates the computationally expensive approach of white noise filtered with a Gaussian kernel by instead using a cubic kernel.
 \end{enumerate}
 Changing magnitude of the input vector -- the point at which the noise landscape is queried -- is equivalent to controlling the zoom level of the noise texture.
-The implementations were largely based on reference implementations \cite{frisvad2016exploring}:
-Only minor code changes and commenting were performed along with using the functions to texture the scene objects with a given noise scale $r$.
+The implementation in the scene was based on reference implementations \cite{frisvad2016exploring} which were used to texture the scene objects with a given noise scale $r$.
 
-An initial scene was constructed by rendering a coloured sphere through 5-fold recursive subdivision of tetrahedra.
-This foreground object was shaded using Phong shading from a positional light behind a perspective camera.
-The object was textured using the noise functions evaluated at normals scaled with a free parameter called noise scale.
+An initial scene was constructed by rendering a coloured sphere through 5-times recursive subdivision of tetrahedra.
+This foreground object was shaded using Phong shading from a positional placed behind the perspective camera.
+The object was textured using the noise functions evaluated at normals scaled with the free parameter $r$.
 This texturing was perform by letting the noise intensity controlling the diffuse light intensity, see Listing \ref{lst:light}.
 
 Behind the object, a 2D noise textured background in black and white was placed.
 
 The resulting scene can bee seen at Figure \ref{fig:t1} and the noise function and other variables can be user controlled on Page \href{https://www.student.dtu.dk/~s183911/proj/webgl-site/t1.html}{t1.html}.
-\lstinputlisting[language=C, firstline=134, lastline=146, caption=Fragment shader snippet related to texturing of foreground objects, label=lst:light]{../webgl-site/t1.html}
+\lstinputlisting[language=C, firstline=135, lastline=147, caption=Fragment shader snippet related to texturing of foreground objects, label=lst:light]{../webgl-site/t1.html}
 
 \paragraph{Task 2: Random Scenes}
 The simple scene was extended to rendering multiple objects.
@@ -84,12 +84,12 @@ The randomly generated scenes can be seen and object variables controlled on Pag
 \paragraph{Task 3: Object Classes}
 Three parameters controlling characteristics of each object were not set by the random scene and were instead set based on object class
 \begin{itemize}
-    \item Colour Hue $h \in [0, 360]$. The emitted radiance of each object was chosen in HSL-format to be $(h, 1, 0.5)$ and converted to RGB. Thus, all objects had fixed lightness and fully saturated colours (before texturing with noise and shading by light) motivated to get a single value expressing most of the dynamics in colour.
+    \item Colour Hue $h \in [0, 360]$. The emitted radiance of each object was chosen in HSL-format to be $(h, 1, 0.5)$ and converted to RGB. Thus, all objects had fixed lightness and fully saturated colours (before texturing with noise and shading by light). This was chosen to get a single value expressing most of the dynamics in colour.
     \item Object elongation $\rho \in [0, 1]$. When $\rho\ne \half$, the object is subject to axis parallel scaling, converting spheres to ellipsoids. 
         Higher $\rho$ means a wider ($x$-elongated) object and the implementation can be seen in Listing \ref{lst:elongation}.
     \item The noise scale $r > 1$ used to texture the object.
 \end{itemize}
-Three classes of objects where implemented and to each class was attributed an average values for each of the above characteristics, making class $i$ be described by $(h_k, \rho_k, r_k)$.
+Three classes of objects where implemented and to each class was attributed an average values for each of the above characteristics, making class $k$ be described by $(h_k, \rho_k, r_k)$.
 The chosen values can be seen in Table \ref{tab:class-avg} and the objects rendered with the average characteristics can be seen in Figure \ref{fig:t3}.
 \begin{table}[H]
     \centering
@@ -124,7 +124,7 @@ For image segmentation, this ground truth should be a pixel map representing the
 This was done in WebGL by adding a separate rending mode where the fragment colour had hue $h_k$ when drawing an object with class $k$, bypassinng all texturing and lighting calculations.
 The background is rendered black, giving four unique pixel values representing four labels\footnote{Pixels at the borders of objects were blended by the fragment shader giving some extra values. These were ignored when loading the dataset into Python, only accepting the object interior as corresponding to class $k$}.
 
-This feature was combined with the class assignments in Task 3 and the random scenes from Task 2 to producgtGe synthetic scenes with class assigned objects and corresponding label maps.
+This feature was combined with the class assignments in Task 3 and the random scenes from Task 2 to produce synthetic scenes with class assigned objects and corresponding label maps.
 One example of such as pair shown in \ref{fig:t4} and another in Appendix \ref{sec:appt4}.
 
 The ability to download the rendered scene was added, and each rendering was given a random string as output name to be able to match images and label maps.
@@ -147,23 +147,27 @@ To keep computational scope down and simulate the data limited learning case, th
 The machine learning model to map from images to segmentation label maps had the architecture of a Fully-Convolutional Deep Neural Network with a ResNet-50 backbone as described by \citeauthor{shelhamer2017fully} \cite{shelhamer2017fully}.
 
 The COCO training set was used for optimization using stochastic gradient descent for 10 epochs, evaluating generalization performance to the validation set each epoch, using direct accuracy, Intersection-over-union (IoU, also called Jaccard Index) and F1-score \cite{moral2019new}.
-Note that, in this multiclass setting, all these scores have two different approaches to computation: Macro which produces the final score by a simple average of scores for each class, and micro averaging which averages class performance by class frequency.
+Note that, in this multiclass setting, all these scores have two different approaches to computation: Macro averaging which produces the final score by a simple average of the scores for each class no matter the abundance of the class, and micro averaging which averages class performance weighted by class frequency.
 In a class imbalanced problem dominated by a single class such as image segmentation with a background class, macro average scores can be expected to be lower.
 
 The training was performed on a Nvidia A100 GPU and took about half an hour.
 
 \paragraph{Training on Synthetic Data}
-For each of the two synthetic datasets, \texttt{perlin} and \texttt{sc}, a tenth of the data was set aside for validating performance and training of a model was performed on the 9000 images exactly as above for 30 epochs, taking $3.5$ hours.
+For each of the two synthetic datasets, \texttt{perlin} and \texttt{sc}, a tenth of the data was set aside for validating performance and training of a model was performed on the 9000 images exactly as above for 10 epochs, taking about $3$ hours per dataset.
 
 
 \paragraph{Transfer learning of Pretrained Model}
-To test the usefulness of the synthetic data for practical image segmentation, the model was after training on synthetic data adapted to the COCO task using the paradigm of transformer learning.
+To test the usefulness of the synthetic data for practical image segmentation, the model produced by training on synthetic data was adapted to the COCO task using the paradigm of transfer learning.
 In this context, the synthetic data training is the pretraining step and the COCO benchmark is the downstream or finetuning task.
 
-This was done by augmenting the training on COCO by initializing the model weights from the network converged on the synthetic dataset instead of random initialization.
-The final layers, the classification head, which are dependant on the number of classes and thus cannot be shared between $4$-class and $21$-class segmentation tasks cannot be transferred.
+This was done by initializing the model weights for the COCO benchmark to the values from the network converged on the synthetic dataset instead of initializing them from random initialization.
+The final layers, jointly called the classification head, which are dependant on the number of classes and thus cannot be shared between $4$-class and $21$-class segmentation tasks were not transferred due to matrix shape differences.
 
 \section{Results}%
+In Figures \ref{fig:t1}, \ref{fig:t3} and \ref{fig:t3}, the renders can be seen.
+Note from the final scene and label map pair shown on Figure \ref{fig:t3} that no constraints were implemented to stop different objects clipping into each other.
+Also note that the learning problem appears non-trivial to the human eye with some objects of different classes appearing very similar.
+
 \label{sec:results}
 \begin{figure}[H]
     \centering
@@ -197,6 +201,8 @@ The final layers, the classification head, which are dependant on the number of 
     }
     \label{fig:t4}
 \end{figure}\noindent
+Succesful results of training on the synthetic dataset can be seen in Figure \ref{fig:fbcurves} and Table \ref{tab:fbfinal}.
+No performance difference is apparent between the PN textured and the SC textured datasets: On both, the model converges to high classification scores in all metrics.
 
 \begin{figure}[H]
     \centering
@@ -215,7 +221,7 @@ The final layers, the classification head, which are dependant on the number of 
     \begin{tabular}{l|llllll}
             Method & Micro Accuracy & Macro Accuracy & Micro IoU & Macro IoU & Micro F1 & Macro F1 \\
             \hline
-            perlin & $97 \pm 1$ & $93 \pm 2$ & $94 \pm 2$ & $88 \pm 2$ & $97 \pm 1$ & $93 \pm 2$ \\
+            perlin & $97 \pm 1$ & $94 \pm 1$ & $95 \pm 1$ & $89 \pm 2$ & $97 \pm 1$ & $94 \pm 1$ \\
             sc & $97 \pm 1$ & $94 \pm 2$ & $94 \pm 1$ & $88 \pm 2$ & $97 \pm 1$ & $93 \pm 2$ \\
     \end{tabular}
     \caption{
@@ -223,6 +229,9 @@ The final layers, the classification head, which are dependant on the number of 
     }
     \label{tab:fbfinal}
 \end{table}\noindent
+Results on the baseline COCO task with and without transfer learning from the models pretrained with the above results can bee seen in Figure \ref{fig:cococurves} and Table \ref{tab:cocofinal}.
+It is apparent that this task is harder than the synthetic task with macro accuracies which reveals that some of the 20 classes the that are infrequent are poorly predicted by the models.
+There is no visible effect on COCO performance from pretraining on the synthetic dataset.
 
 \begin{figure}[H]
     \centering
@@ -242,16 +251,15 @@ The final layers, the classification head, which are dependant on the number of 
             Method & Micro Accuracy & Macro Accuracy & Micro IoU & Macro IoU & Micro F1 & Macro F1 \\
             \hline
             baseline & $88 \pm 2$ & $17 \pm 2$ & $78 \pm 3$ & $14 \pm 2$ & $88 \pm 2$ & $17 \pm 2$ \\
-            perlin & $87 \pm 2$ & $17 \pm 2$ & $78 \pm 3$ & $14 \pm 2$ & $87 \pm 2$ & $17 \pm 2$ \\
+            perlin & $87 \pm 2$ & $18 \pm 2$ & $78 \pm 3$ & $14 \pm 2$ & $87 \pm 2$ & $17 \pm 2$ \\
             sc & $95 \pm 1$ & $88 \pm 2$ & $90 \pm 2$ & $79 \pm 3$ & $95 \pm 1$ & $87 \pm 2$ \\
     \end{tabular}
     \caption{
         COCO final validation results for three initialization approaches.
     }
-    \label{tab:fbfinal}
+    \label{tab:cocofinal}
 \end{table}\noindent
 
-%TODO: Comment directly on model differences.
 \section{Discussion}%
 \label{sec:disc}
 Initially, based on the COCO results, I must concede that I could not show what I hoped for:
@@ -259,14 +267,14 @@ That the pretraining on the synthetic dataset on different balloon-looking objec
 The synthetic learning task was, however, succesful:
 For both noise functions, the model converged to high performance.
 Should this be taken as a sign that different computer vision tasks follow so diverging data distributions that current models cannot extract generalizable patterns across tasks?
-This question deserves serious work, but I would imagine that a similar setup as this one can succeed.
+This question deserves serious work, but I would imagine that a similar setup as this one can succeed despite this worry.
 
 Looking back, the choice of the COCO task, which appears widely used for benchmarking state of the art models, might be problematic for this project as COCO is a complex image segmentation benchmark with an incredibly variant dataset.
-Improved convergence through synthetic pretraining might appear if more care is taken to the machine learning part of the project but I would first try with simpler benchmarks such as medical imaging.
+Improved convergence through synthetic pretraining might appear if more care is taken to the machine learning part of the project but I would first try with visually simpler benchmarks such as medical imaging.
 Another way to improve the impact of pretraining is to improve the realism of the scenes.
-Adding shadows, adding a physical world with meaningful geometry instead of floating foreground objects and adding different objects than spheres are all within reason with the methods from the course.
+Adding shadows, adding a physical world with meaningful geometry instead of floating foreground objects and adding different objects than spheres are all within reason using the methods from the course.
 
-Regardless on the relevance for the downstream COCO task, I still find value in the dataset because it allows for the model to converge to reliable class predictions on the synthetic dataset itself.
+Regardless of the relevance for the downstream COCO task, I still find value in the dataset because it allows for the model to converge to reliable class predictions on the synthetic dataset itself.
 This fact can be used to gain insights into model behaviour which would be my next step if the deadline was a week later:
 How would the model F1 score change if the objects are not textured using noise functions at all?
 What if they all have the same colour or same elongation?
