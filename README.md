@@ -1,6 +1,8 @@
 # Synthetic Semantic Segmentation Training Data using WebGL
 Course project for 02561 Computer Graphics at the Technical University of Denmark.
 
+See [report](report/s183911-proj.pdf) and the example [website](https://www.student.dtu.dk/~s183911/proj/webgl-site/index.html).
+
 ## Reproduction
 ### Setup
 Run `make` to install the Python software.
